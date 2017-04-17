@@ -1,0 +1,20 @@
+Question 4.1 – Explain why 001100101 represent 12.625 and 010001010 represent 17.250 in signed fixed-point 5.3 format
+
+Format 5.3 means that 3 bits is fractional part and the least possible fractional 
+part is 2^(-3) = 0.125;
+Therefore, 001100101 in signed format equals 12.625 
+(001100.101) = (+ 2^3 + 2^2 +2^-1 +2^-3 = 8+4+0.5+0.125 = 12.625)
+Similarly (010001010) = (+ 2^5 +2^0 +2^-2 = 16+1+0.25 = 17.25)
+
+Question 4.2 – Make calculations and convert points of filter’s impulse response from fixed-point representation to the real format (fixed-point numbers are signed with 6-bit word length and 5-bit fraction part): h0 = -3; h1 = -8; h2 = -8; h3 = 0; h4 = 11; h5 = 16; h6 = 11; h7 = 0; h8 = -8; h9 = -8; h10 = -3.
+
+h0 = -3*2^(-5) = -0.09375;
+h1 = -8*2^(-5) = -0.25;
+h4 = 11*2^(-5) = 0.34375;
+h5 = 16*2^(-5) = 0.5;
+
+Question 4.3 – Explain, why did we choose accumulator width equal to 25 bit for filter from section 16, presented on Fig.4.42? Why we shift this 25 bit result by 6 bits right? How we obtain 18-bit data on filter’s output?
+
+Input and output data in this example are represented in signed fixed-point 0.17 format and needs 18 bits to be stored. That’s why registers in register chain, holding input samples, will have width of 18 bits. Input samples can be shifted maximum 4 bits left (multiplication by 16), so all 15 data inputs and data output of big multiplexor will have dimension of 18+4=22 bits. To prevent overflow accumulator (and adder) should have 25 bit-width. The number of additional bits is calculated as log2(|M|), where M is the sum of the absolute value of the filter coefficients, which assumes the most hostile input that is possible. Such input could happen if the ADC input is too high and serious clipping occurs. In the actual case the sum is: 3+8+8+11+16+11+8+8+3=76 and therefore number of additional bits in accum. will be 7. So the width of accumulator will be 18+7 = 25.
+
+On 15-th positive edge of fop, we need convert the contents of accumulator to signed fixed-point 0.17 format. To do this, firstly we should discard lower 6 bits of accumulator contents. Obtained 19-bit result will contain desired number in lower 18 bits and most significant bit will indicate an overflow. For correct handling of possible overflow, we should adopt the operation of saturation to this 19-bit number, which will give us desired 18-bit result of convolution. Saturation will be considered in one of the future sections. Obtained result of convolution must be saved in output register and should not be changed until the next output sample will be calculated.
